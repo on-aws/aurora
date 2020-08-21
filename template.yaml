@@ -1,0 +1,99 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Amazon Aurora Serverless DB cluster. **WARNING** This template creates an Amazon Aurora DB cluster.
+  You will be billed for the AWS resources used if you create a stack from this template.
+
+Parameters:
+  Tag:
+    Description: We tag all AWS resources for your convinience.
+    Type: String
+
+  VPC:
+    Description: Choose which VPC should we use.
+    Type: AWS::EC2::VPC::Id
+
+  PrivateSubnets:
+    Type: List<AWS::EC2::Subnet::Id>
+
+  ComputeSecurityGroup:
+    Description: Select the Compute Security Group
+    Type: AWS::EC2::SecurityGroup::Id
+
+Resources:
+  DBCredentials:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: Secret for Ghost
+      GenerateSecretString:
+        SecretStringTemplate: |
+          {"username": "admin"}
+        GenerateStringKey: password
+        PasswordLength: 16
+        ExcludePunctuation: true
+      Tags:
+        - Key: App
+          Value: !Ref Tag
+        - Key: Name
+          Value: !Ref Tag
+
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: !Ref AWS::StackName
+      SubnetIds: !Ref PrivateSubnets
+      Tags:
+        - Key: App
+          Value: !Ref Tag
+        - Key: Name
+          Value: !Ref Tag
+
+  RDSCluster:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      MasterUsername: !Join ['', ['{{resolve:secretsmanager:', !Ref DBCredentials, ':SecretString:username}}' ]]
+      MasterUserPassword: !Join ['', ['{{resolve:secretsmanager:', !Ref DBCredentials, ':SecretString:password}}' ]]
+      DBClusterIdentifier: !Ref AWS::StackName
+      Engine: aurora
+      EngineVersion: 5.6.10a
+      EngineMode: serverless
+      ScalingConfiguration:
+        AutoPause: true
+        MinCapacity: 1
+        MaxCapacity: 2
+        SecondsUntilAutoPause: 900
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      VpcSecurityGroupIds:
+        - !Ref SecurityGroup
+      Tags:
+        - Key: App
+          Value: !Ref Tag
+        - Key: Name
+          Value: !Ref Tag
+
+    SecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: !Sub ${Tag} Aurora Security Group
+        VpcId:
+          Ref: VPC
+        SecurityGroupIngress:
+          - IpProtocol: tcp
+            FromPort: 3306
+            ToPort: 3306
+            SourceSecurityGroupId: !Ref ComputeSecurityGroup
+        Tags:
+          - Key: App
+            Value: !Ref Tag
+          - Key: Name
+            Value: !Ref Tag
+
+  SecretRDSInstanceAttachment:
+    Type: AWS::SecretsManager::SecretTargetAttachment
+    Properties:
+      SecretId: !Ref DBCredentials
+      TargetId: !Ref RDSCluster
+      TargetType: AWS::RDS::DBCluster
+
+Outputs:
+  DBSecretId:
+    Value: !Ref DBCredentials
