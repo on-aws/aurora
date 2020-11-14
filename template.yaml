@@ -70,8 +70,8 @@ Resources:
       MasterUsername: !Join ['', ['{{resolve:secretsmanager:', !Ref DBCredentials, ':SecretString:username}}' ]]
       MasterUserPassword: !Join ['', ['{{resolve:secretsmanager:', !Ref DBCredentials, ':SecretString:password}}' ]]
       DBClusterIdentifier: !Ref AWS::StackName
-      Engine: aurora
-      EngineVersion: 5.6.10a
+      Engine: aurora-mysql
+      EngineVersion: 5.7.12
       EngineMode: serverless
       ScalingConfiguration:
         AutoPause: true
