@@ -97,9 +97,9 @@ Resources:
       EngineMode: serverless
       ScalingConfiguration:
         AutoPause: true
-        MinCapacity: 1
-        MaxCapacity: 2
-        SecondsUntilAutoPause: 900
+        MinCapacity: 2
+        MaxCapacity: 4
+        SecondsUntilAutoPause: 300
       DBSubnetGroupName: !Ref DBSubnetGroup
       VpcSecurityGroupIds:
         - !Ref SecurityGroup
