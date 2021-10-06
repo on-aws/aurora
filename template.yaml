@@ -38,8 +38,10 @@ Resources:
         SecretStringTemplate:
           Fn::If:
              - MySQL
-             - {"username": "admin"}
-             - {"username": "postgres"}
+             - |
+                {"username": "admin"}
+             - |
+                {"username": "postgres"}
         GenerateStringKey: password
         PasswordLength: 16
         ExcludePunctuation: true
