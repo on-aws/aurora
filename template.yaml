@@ -35,8 +35,11 @@ Resources:
     Properties:
       Description: Secret for Aurora
       GenerateSecretString:
-        SecretStringTemplate: |
-          {"username": "on-aws-admin"}
+        SecretStringTemplate:
+          Fn::If:
+             - MySQL
+             - {"username": "admin"}
+             - {"username": "postgres"}
         GenerateStringKey: password
         PasswordLength: 16
         ExcludePunctuation: true
