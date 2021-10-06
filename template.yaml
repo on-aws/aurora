@@ -19,6 +19,12 @@ Parameters:
     Description: Select the Compute Security Group
     Type: AWS::EC2::SecurityGroup::Id
 
+  # aws rds describe-db-engine-versions --engine aurora-mysql --query "DBEngineVersions[].EngineVersion"
+  # aws rds describe-db-engine-versions --engine aurora-postgresql --query "DBEngineVersions[].EngineVersion"
+  Engine:
+    Type: String
+    AllowedValues: [ aurora-mysql, aurora-postgresql ]
+ 
 Resources:
   DBCredentials:
     Type: AWS::SecretsManager::Secret
@@ -55,8 +61,16 @@ Resources:
         Ref: VPC
       SecurityGroupIngress:
         - IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
+          FromPort: 
+            Fn::If:
+              - MySQL
+              - 3306
+              - 5432
+          ToPort:
+            Fn::If:
+              - MySQL
+              - 3306
+              - 5432
           SourceSecurityGroupId: !Ref ComputeSecurityGroup
       Tags:
         - Key: App
@@ -70,8 +84,12 @@ Resources:
       MasterUsername: !Join ['', ['{{resolve:secretsmanager:', !Ref DBCredentials, ':SecretString:username}}' ]]
       MasterUserPassword: !Join ['', ['{{resolve:secretsmanager:', !Ref DBCredentials, ':SecretString:password}}' ]]
       DBClusterIdentifier: !Ref AWS::StackName
-      Engine: aurora-mysql
-      EngineVersion: 5.7.12
+      Engine: !Ref Engine
+      EngineVersion:
+        Fn::If:
+              - MySQL
+              - 5.7.mysql_aurora.2.10.0
+              - 13.3
       EngineMode: serverless
       ScalingConfiguration:
         AutoPause: true
