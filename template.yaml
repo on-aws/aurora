@@ -25,7 +25,7 @@ Parameters:
     Type: String
     AllowedValues: [ aurora-mysql, aurora-postgresql ]
  
- Conditions:
+Conditions:
   MySQL:
     Fn::Equals: [!Ref Engine, aurora-mysql]
  
