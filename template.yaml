@@ -93,7 +93,7 @@ Resources:
         Fn::If:
           - MySQL
           - 5.7.mysql_aurora.2.10.0
-          - 13.3
+          - 10.14
       EngineMode: serverless
       ScalingConfiguration:
         AutoPause: true
