@@ -33,10 +33,10 @@ Resources:
   DBCredentials:
     Type: AWS::SecretsManager::Secret
     Properties:
-      Description: Secret for Ghost
+      Description: Secret for Aurora
       GenerateSecretString:
         SecretStringTemplate: |
-          {"username": "admin"}
+          {"username": "on-aws-admin"}
         GenerateStringKey: password
         PasswordLength: 16
         ExcludePunctuation: true
