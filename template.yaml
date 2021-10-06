@@ -25,6 +25,10 @@ Parameters:
     Type: String
     AllowedValues: [ aurora-mysql, aurora-postgresql ]
  
+ Conditions:
+  MySQL:
+    Fn::Equals: [!Ref Engine, aurora-mysql]
+ 
 Resources:
   DBCredentials:
     Type: AWS::SecretsManager::Secret
@@ -87,9 +91,9 @@ Resources:
       Engine: !Ref Engine
       EngineVersion:
         Fn::If:
-              - MySQL
-              - 5.7.mysql_aurora.2.10.0
-              - 13.3
+          - MySQL
+          - 5.7.mysql_aurora.2.10.0
+          - 13.3
       EngineMode: serverless
       ScalingConfiguration:
         AutoPause: true
