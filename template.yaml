@@ -68,19 +68,15 @@ Resources:
       GroupDescription: !Sub ${Tag} Aurora Security Group
       VpcId:
         Ref: VPC
-      SecurityGroupIngress:
+      SecurityGroupEgress:
         - IpProtocol: tcp
-          FromPort: 
-            Fn::If:
-              - MySQL
-              - 3306
-              - 5432
-          ToPort:
-            Fn::If:
-              - MySQL
-              - 3306
-              - 5432
-          SourceSecurityGroupId: !Ref ComputeSecurityGroup
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
       Tags:
         - Key: App
           Value: !Ref Tag
@@ -124,3 +120,6 @@ Resources:
 Outputs:
   DBSecretId:
     Value: !Ref DBCredentials
+    
+  SecurityGroup:
+    Value: !Ref SecurityGroup
