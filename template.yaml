@@ -85,7 +85,7 @@ Resources:
         - Key: App
           Value: !Ref Tag
         - Key: Name
-          Value: !Ref Tag
+          Value: !Sub ${Tag}-on-aws-aurora
 
   RDSCluster:
     Type: AWS::RDS::DBCluster
@@ -112,7 +112,7 @@ Resources:
         - Key: App
           Value: !Ref Tag
         - Key: Name
-          Value: !Ref Tag
+          Value: !Sub ${Tag}-on-aws-aurora
 
   SecretRDSInstanceAttachment:
     Type: AWS::SecretsManager::SecretTargetAttachment
