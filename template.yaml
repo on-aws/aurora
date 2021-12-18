@@ -120,6 +120,20 @@ Resources:
         - Key: Name
           Value: !Sub ${Tag}-on-aws-aurora
 
+  RDSDBInstance1:
+    Type: AWS::RDS::DBInstance
+    Condition: SERVERLESS
+    Properties:
+      DBClusterIdentifier: !Ref RDSCluster
+      DBInstanceClass: db.t3.medium
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      Engine: !Ref Engine
+      Tags:
+        - Key: App
+          Value: !Ref Tag
+        - Key: Name
+          Value: !Sub ${Tag}-on-aws-aurora
+
   SecretRDSInstanceAttachment:
     Type: AWS::SecretsManager::SecretTargetAttachment
     Properties:
