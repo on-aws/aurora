@@ -37,6 +37,8 @@ Conditions:
     Fn::Equals: [!Ref Engine, aurora-mysql]
   SERVERLESS:
     Fn::Equals: [!Ref EngineMode, serverless]
+  PROVISIONED:
+    Fn::Equals: [!Ref EngineMode, provisioned]
 
 Resources:
   DBCredentials:
@@ -122,7 +124,7 @@ Resources:
 
   RDSDBInstance1:
     Type: AWS::RDS::DBInstance
-    Condition: SERVERLESS
+    Condition: PROVISIONED
     Properties:
       DBClusterIdentifier: !Ref RDSCluster
       DBInstanceClass: db.t3.medium
