@@ -114,8 +114,6 @@ Resources:
       Tags:
         - Key: App
           Value: !Ref Tag
-        - Key: Name
-          Value: !Sub ${Tag}-on-aws-aurora
 
   SecretRDSInstanceAttachment:
     Type: AWS::SecretsManager::SecretTargetAttachment
