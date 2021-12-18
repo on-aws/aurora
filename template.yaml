@@ -133,3 +133,6 @@ Outputs:
 
   SecurityGroup:
     Value: !Ref SecurityGroup
+
+  Endpoint:
+    Value: !GetAtt RDSCluster.Endpoint.Address
