@@ -95,7 +95,6 @@ Resources:
     Properties:
       MasterUsername: !Join ['', ['{{resolve:secretsmanager:', !Ref DBCredentials, ':SecretString:username}}' ]]
       MasterUserPassword: !Join ['', ['{{resolve:secretsmanager:', !Ref DBCredentials, ':SecretString:password}}' ]]
-      DBClusterIdentifier: !Ref AWS::StackName
       Engine: !Ref Engine
       EngineVersion:
         Fn::If:
@@ -114,6 +113,8 @@ Resources:
       Tags:
         - Key: App
           Value: !Ref Tag
+        - Key: Name
+          Value: !Sub ${Tag}-on-aws-aurora
 
   SecretRDSInstanceAttachment:
     Type: AWS::SecretsManager::SecretTargetAttachment
