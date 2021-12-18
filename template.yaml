@@ -26,14 +26,29 @@ Parameters:
       - serverless
       - provisioned
 
+  # aws rds describe-db-engine-versions --engine aurora-mysql --query "DBEngineVersions[].EngineVersion"
+  # aws rds describe-db-engine-versions --engine aurora-postgresql --query "DBEngineVersions[].EngineVersion"
+  Engine:
+    Type: String
+    AllowedValues: [ aurora-mysql, aurora-postgresql ]
+
+Conditions:
+  MySQL:
+    Fn::Equals: [!Ref Engine, aurora-mysql]
+
 Resources:
   DBCredentials:
     Type: AWS::SecretsManager::Secret
     Properties:
-      Description: Secret for Ghost
+      Description: Secret for Aurora
       GenerateSecretString:
-        SecretStringTemplate: |
-          {"username": "admin"}
+        SecretStringTemplate:
+          Fn::If:
+             - MySQL
+             - |
+                {"username": "admin"}
+             - |
+                {"username": "postgres"}
         GenerateStringKey: password
         PasswordLength: 16
         ExcludePunctuation: true
@@ -60,16 +75,20 @@ Resources:
       GroupDescription: !Sub ${Tag} Aurora Security Group
       VpcId:
         Ref: VPC
-      SecurityGroupIngress:
+      SecurityGroupEgress:
         - IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
-          SourceSecurityGroupId: !Ref ComputeSecurityGroup
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
       Tags:
         - Key: App
           Value: !Ref Tag
         - Key: Name
-          Value: !Ref Tag
+          Value: !Sub ${Tag}-on-aws-aurora
 
   RDSCluster:
     Type: AWS::RDS::DBCluster
@@ -77,14 +96,18 @@ Resources:
       MasterUsername: !Join ['', ['{{resolve:secretsmanager:', !Ref DBCredentials, ':SecretString:username}}' ]]
       MasterUserPassword: !Join ['', ['{{resolve:secretsmanager:', !Ref DBCredentials, ':SecretString:password}}' ]]
       DBClusterIdentifier: !Ref AWS::StackName
-      Engine: aurora-mysql
-      EngineVersion: 5.7.12
+      Engine: !Ref Engine
+      EngineVersion:
+        Fn::If:
+          - MySQL
+          - 5.7.mysql_aurora.2.10.0
+          - 10.14
       EngineMode: !Ref EngineMode
       ScalingConfiguration:
         AutoPause: true
-        MinCapacity: 1
-        MaxCapacity: 2
-        SecondsUntilAutoPause: 900
+        MinCapacity: 2
+        MaxCapacity: 4
+        SecondsUntilAutoPause: 300
       DBSubnetGroupName: !Ref DBSubnetGroup
       VpcSecurityGroupIds:
         - !Ref SecurityGroup
@@ -92,7 +115,7 @@ Resources:
         - Key: App
           Value: !Ref Tag
         - Key: Name
-          Value: !Ref Tag
+          Value: !Sub ${Tag}-on-aws-aurora
 
   SecretRDSInstanceAttachment:
     Type: AWS::SecretsManager::SecretTargetAttachment
@@ -104,3 +127,6 @@ Resources:
 Outputs:
   DBSecretId:
     Value: !Ref DBCredentials
+
+  SecurityGroup:
+    Value: !Ref SecurityGroup
