@@ -19,6 +19,13 @@ Parameters:
     Description: Select the Compute Security Group
     Type: AWS::EC2::SecurityGroup::Id
 
+  EngineMode:
+    Type: String
+    Default: serverless
+    AllowedValues:
+      - serverless
+      - provisioned
+
 Resources:
   DBCredentials:
     Type: AWS::SecretsManager::Secret
@@ -72,7 +79,7 @@ Resources:
       DBClusterIdentifier: !Ref AWS::StackName
       Engine: aurora-mysql
       EngineVersion: 5.7.12
-      EngineMode: serverless
+      EngineMode: !Ref EngineMode
       ScalingConfiguration:
         AutoPause: true
         MinCapacity: 1
