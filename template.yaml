@@ -40,6 +40,11 @@ Conditions:
   PROVISIONED:
     Fn::Equals: [!Ref EngineMode, provisioned]
 
+Mappings:
+  Configuration:
+    Logs:
+      RetentionInDays: 30
+
 Resources:
   DBCredentials:
     Type: AWS::SecretsManager::Secret
@@ -116,11 +121,30 @@ Resources:
       DBSubnetGroupName: !Ref DBSubnetGroup
       VpcSecurityGroupIds:
         - !Ref SecurityGroup
+      EnableCloudwatchLogsExports: !If
+        - PROVISIONED
+        - - !If
+            - MySQL
+            - audit
+            - postgresql
+        - !Ref AWS::NoValue
       Tags:
         - Key: App
           Value: !Ref Tag
         - Key: Name
           Value: !Sub ${Tag}-on-aws-aurora
+        
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub 
+        - /aws/rds/cluster/${RDSCluster}/${Log}
+        -
+          Log: !If
+            - MySQL
+            - audit
+            - postgresql
+      RetentionInDays: !FindInMap [Configuration, Logs, RetentionInDays]
 
   RDSDBInstance1:
     Type: AWS::RDS::DBInstance
